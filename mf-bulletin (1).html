@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MF Investment Bulletin</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- PDF.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1c1c2e;--ink2:#4a4a6a;--ink3:#9090aa;
+  --bg:#f5f4ef;--bg2:#eceae2;--bgc:#fff;
+  --green:#1a6b4a;--green2:#2d9969;--green3:#e8f5ee;
+  --red:#c0392b;--red2:#fdf0ef;
+  --gold:#b8860b;--gold2:#fdf8e8;
+  --blue:#1a56b0;--blue2:#e8f0fe;
+  --border:#ddd9ce;--border2:#eeeae0;
+  --r:12px;--r2:8px;
+  --sh:0 2px 16px rgba(28,28,46,.07);
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;min-height:100vh}
+
+/* HEADER */
+.hdr{background:var(--ink);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+.hdr-brand{font-family:'DM Serif Display',serif;font-size:20px}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;letter-spacing:.5px;margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.sync-lbl{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.35)}
+.btn-ref{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 13px;border-radius:20px;font-size:11px;cursor:pointer;display:none;font-family:'Outfit',sans-serif;transition:background .2s}
+.btn-ref:hover{background:rgba(255,255,255,.2)}
+
+/* SETUP BANNER */
+.setup-banner{background:var(--gold2);border:1px solid #e0c97a;border-radius:var(--r);padding:1.1rem 1.25rem;margin-bottom:1.25rem}
+.setup-title{font-weight:600;font-size:13px;color:var(--gold);margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.setup-desc{font-size:12px;color:var(--gold);margin-bottom:10px;line-height:1.5}
+.setup-row{display:flex;gap:8px}
+.setup-inp{flex:1;border:1px solid #e0c97a;border-radius:var(--r2);padding:9px 12px;font-size:13px;font-family:'Outfit',sans-serif;background:#fff;color:var(--ink);outline:none}
+.setup-inp:focus{border-color:var(--gold)}
+.setup-save{background:var(--gold);color:#fff;border:none;border-radius:var(--r2);padding:9px 18px;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;white-space:nowrap;transition:background .2s}
+.setup-save:hover{background:#9a7009}
+.setup-ok{background:var(--green3);border:1px solid #b2ddc8;border-radius:var(--r);padding:.75rem 1.1rem;margin-bottom:1.25rem;font-size:13px;color:var(--green);display:none;align-items:center;justify-content:space-between}
+.setup-ok-key{font-family:'DM Mono',monospace;font-size:11px}
+
+/* TABS */
+.tab-bar{display:flex;gap:2px;background:var(--bg2);border-radius:10px;padding:3px;margin-bottom:1.25rem}
+.tab-btn{flex:1;padding:8px 8px;border:none;background:transparent;border-radius:8px;font-size:13px;cursor:pointer;color:var(--ink3);font-family:'Outfit',sans-serif;font-weight:500;transition:all .2s}
+.tab-btn.on{background:var(--bgc);color:var(--ink);box-shadow:var(--sh)}
+.tp{display:none}.tp.on{display:block}
+
+/* WIZARD */
+.wiz{background:var(--bgc);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:1.25rem;overflow:hidden}
+.wiz-prog{display:flex}
+.wdot{flex:1;height:3px;background:var(--border2);transition:background .3s}
+.wdot.done{background:var(--green2)}.wdot.act{background:var(--green)}
+.ws{display:none;padding:1.5rem 1.4rem}.ws.on{display:block}
+.ws-hd{display:flex;align-items:flex-start;gap:10px;margin-bottom:1.15rem}
+.wnum{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;flex-shrink:0;margin-top:2px}
+.wnum.done{background:var(--green2)}
+.wtitle{font-family:'DM Serif Display',serif;font-size:16px;color:var(--ink)}
+.wsub{font-size:12px;color:var(--ink3);margin-top:2px}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.flbl{font-size:10px;color:var(--ink3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.4px}
+.finp{border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;font-size:14px;font-family:'Outfit',sans-serif;color:var(--ink);background:var(--bg);outline:none;width:100%;transition:border-color .2s}
+.finp:focus{border-color:var(--green2);background:#fff}
+.fhint{font-size:11px;color:var(--ink3)}
+.rg{display:flex;gap:8px}
+.ro{flex:1;border:1px solid var(--border);border-radius:var(--r2);padding:9px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ink2);transition:all .2s;user-select:none}
+.ro.on{border-color:var(--green2);background:var(--green3);color:var(--green);font-weight:500}
+.rdot{width:13px;height:13px;border:2px solid var(--border);border-radius:50%;flex-shrink:0;transition:all .2s}
+.ro.on .rdot{border-color:var(--green2);background:var(--green2)}
+.btn-p{background:var(--ink);color:#fff;border:none;border-radius:var(--r2);padding:10px 22px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:background .2s}
+.btn-p:hover{background:#2d2d50}
+.btn-g{background:var(--green2);color:#fff;border:none;border-radius:var(--r2);padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .2s}
+.btn-g:hover{background:#238a58}
+.btn-s{background:transparent;color:var(--ink3);border:1px solid var(--border);border-radius:var(--r2);padding:9px 16px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+.btn-s:hover{background:var(--bg2)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid #f5c6c2;border-radius:var(--r2);padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+.btn-danger:hover{background:var(--red2)}
+.btn-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.info-box{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 14px;margin-bottom:12px}
+.warn-box{background:var(--gold2);border:1px solid #e0c97a;border-radius:var(--r2);padding:10px 13px;margin-bottom:12px;font-size:12.5px;color:var(--gold);line-height:1.5}
+.mock-tabs{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:11px;text-align:center;margin-bottom:12px}
+.mt{flex:1;padding:8px 4px;border-right:1px solid var(--border);color:var(--ink3)}
+.mt:last-child{border-right:none}
+.mt.hi{background:var(--green3);color:var(--green);font-weight:600;box-shadow:inset 0 0 0 2px var(--green2)}
+.cl{list-style:none;padding:0;margin-bottom:12px}
+.cl li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink2);padding:4px 0;line-height:1.45}
+.cl li::before{content:'→';color:var(--green2);font-weight:600;flex-shrink:0;margin-top:1px}
+
+/* SAVED PORTFOLIO BANNER */
+.saved-banner{background:var(--green3);border:1px solid #b2ddc8;border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.25rem;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.saved-info{font-size:13px;color:var(--green)}
+.saved-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--green2);margin-top:2px}
+.saved-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* UPLOAD */
+.uz-wrap{border:2px dashed var(--border);border-radius:var(--r2);padding:2rem 1.5rem;text-align:center;background:var(--bg);transition:all .2s;cursor:pointer}
+.uz-wrap:hover,.uz-wrap.dv{border-color:var(--green2);background:var(--green3)}
+.uz-icon{font-size:36px;opacity:.3;margin-bottom:8px}
+.uz-title{font-size:15px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.uz-sub{font-size:12px;color:var(--ink3)}
+.uz-sub b{color:var(--green2);cursor:pointer}
+
+/* STATUS */
+.status-box{border-radius:var(--r2);padding:11px 14px;margin-top:12px;font-size:13px;display:none;align-items:center;gap:8px;line-height:1.45}
+.status-box.info{background:var(--green3);border:1px solid #b2ddc8;color:var(--green)}
+.status-box.err{background:var(--red2);border:1px solid #f5c6c2;color:var(--red)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.08);border-top-color:var(--green2);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* METRICS */
+.mg{display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.25rem}
+.mc{background:var(--bgc);border:1px solid var(--border2);border-radius:var(--r);padding:1rem 1.1rem;position:relative;overflow:hidden}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green)}
+.mc.rd::before{background:var(--red)}.mc.gd::before{background:var(--gold)}
+.mlbl{font-size:10px;color:var(--ink3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+.mval{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);letter-spacing:-.4px}
+.mval.up{color:var(--green)}.mval.dn{color:var(--red)}
+.msub{font-size:11px;margin-top:2px}.msub.up{color:var(--green2)}.msub.dn{color:var(--red)}
+
+/* TABLE */
+.sc{background:var(--bgc);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:1.25rem;overflow:hidden;display:none}
+.sc-hd{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.2rem;border-bottom:1px solid var(--border2);background:var(--bg)}
+.sc-title{font-family:'DM Serif Display',serif;font-size:15px;color:var(--ink)}
+.sc-badge{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:8px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;padding:8px 11px;color:var(--ink3);font-weight:500;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--border2);background:var(--bg);white-space:nowrap}
+td{padding:9px 11px;border-bottom:1px solid var(--border2);color:var(--ink);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.fn{font-weight:500;line-height:1.3}.fm{font-size:10px;color:var(--ink3);margin-top:2px;font-family:'DM Mono',monospace}
+.pill{display:inline-block;font-size:10px;padding:1px 6px;border-radius:5px;font-family:'DM Mono',monospace;font-weight:500;margin-top:3px}
+.p-eq{background:var(--blue2);color:var(--blue)}.p-debt{background:var(--gold2);color:var(--gold)}
+.p-hyb{background:#f3e8fe;color:#6b21a8}.p-liq{background:var(--green3);color:var(--green)}
+.p-oth{background:var(--bg2);color:var(--ink2)}
+.num{font-family:'DM Mono',monospace}.up{color:var(--green)}.dn{color:var(--red)}
+.ftag{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3);background:var(--bg2);padding:1px 5px;border-radius:3px}
+.nav-dt{font-size:10px;color:var(--ink3)}
+
+/* ALLOC */
+.alloc-sec{padding:1rem 1.2rem}
+.ar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.al{font-size:12px;color:var(--ink2);width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.ab{flex:1;height:6px;background:var(--border2);border-radius:3px;overflow:hidden}
+.af{height:100%;border-radius:3px;transition:width .7s ease}
+.ap{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink3);width:36px;text-align:right;flex-shrink:0}
+
+/* AI */
+.ai-card{background:var(--ink);border-radius:var(--r);padding:1.3rem 1.5rem;margin-bottom:1.25rem}
+.ai-title{font-family:'DM Serif Display',serif;font-size:15px;color:rgba(255,255,255,.65);margin-bottom:.7rem}
+.ai-body{font-size:13px;color:rgba(255,255,255,.75);line-height:1.65}
+.ai-chips{display:none;flex-wrap:wrap;gap:6px;margin-top:.7rem}
+.aic{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.55);font-size:11px;padding:4px 10px;border-radius:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.aic:hover{background:rgba(255,255,255,.15);color:#fff}
+.ai-row{display:none;gap:8px;margin-top:.7rem}
+.ai-inp{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:8px 11px;font-size:12px;color:#fff;font-family:'Outfit',sans-serif;outline:none}
+.ai-inp::placeholder{color:rgba(255,255,255,.28)}
+.ai-inp:focus{border-color:rgba(255,255,255,.3)}
+.ai-send{background:var(--green2);border:none;border-radius:8px;color:#fff;padding:8px 14px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .2s}
+.ai-send:hover{background:#238a58}
+.ai-res{margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:8px;font-size:13px;color:rgba(255,255,255,.78);line-height:1.65;display:none}
+
+/* NEWS */
+.news-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.nc{background:var(--bg2);border:1px solid var(--border);color:var(--ink2);font-size:12px;padding:4px 10px;border-radius:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.nc:hover{background:var(--green3);color:var(--green);border-color:var(--green2)}
+.news-body{font-size:13px;color:var(--ink2);line-height:1.7;min-height:50px}
+
+/* WRAP */
+.wrap{max-width:920px;margin:0 auto;padding:1.5rem 1rem 5rem}
+@media(max-width:600px){.mg{grid-template-columns:1fr 1fr}.hdr-sub{display:none}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-brand">MF Bulletin</div>
+    <div class="hdr-sub">PERSONAL PORTFOLIO TRACKER</div>
+  </div>
+  <div class="hdr-r">
+    <span class="sync-lbl" id="sync-lbl">Not synced</span>
+    <button class="btn-ref" id="btn-ref" onclick="refreshNAVs()">↻ Refresh NAV</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- API KEY SETUP -->
+  <div id="setup-banner" class="setup-banner">
+    <div class="setup-title">🔑 Enter your Anthropic API Key</div>
+    <div class="setup-desc">Required for AI-powered PDF parsing and portfolio analysis. Your key is saved securely to Firebase — enter it once, works everywhere.</div>
+    <div class="setup-row">
+      <input class="setup-inp" id="api-key-inp" type="password" placeholder="sk-ant-api03-…">
+      <button class="setup-save" onclick="saveApiKey()">Save to Cloud</button>
+    </div>
+    <div style="font-size:11px;color:var(--gold);margin-top:6px">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--gold);text-decoration:underline">console.anthropic.com</a></div>
+  </div>
+  <div id="setup-ok" class="setup-ok">
+    <div>
+      <div style="font-weight:500">✓ API key saved to Firebase</div>
+      <div class="setup-ok-key" id="setup-ok-key"></div>
+    </div>
+    <button onclick="clearApiKey()" class="btn-danger">Change Key</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn on" onclick="swTab('portfolio')">Portfolio</button>
+    <button class="tab-btn" onclick="swTab('analysis')">AI Analysis</button>
+    <button class="tab-btn" onclick="swTab('news')">News</button>
+  </div>
+
+  <!-- PORTFOLIO TAB -->
+  <div class="tp on" id="tab-portfolio">
+
+    <!-- SAVED PORTFOLIO BANNER (shows when Firebase has data) -->
+    <div class="saved-banner" id="saved-banner">
+      <div>
+        <div class="saved-info" id="saved-info">Portfolio loaded from cloud</div>
+        <div class="saved-meta" id="saved-meta"></div>
+      </div>
+      <div class="saved-actions">
+        <button class="btn-ref" style="display:inline-block" onclick="refreshNAVs()">↻ Refresh NAV</button>
+        <button class="btn-danger" onclick="clearPortfolio()">Clear & Re-upload</button>
+      </div>
+    </div>
+
+    <!-- WIZARD (hidden once data loaded from Firebase) -->
+    <div class="wiz" id="wiz">
+      <div class="wiz-prog">
+        <div class="wdot act" id="d1"></div>
+        <div class="wdot" id="d2"></div>
+        <div class="wdot" id="d3"></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="ws on" id="ws1">
+        <div class="ws-hd"><div class="wnum">1</div>
+          <div><div class="wtitle">Enter your details</div><div class="wsub">PAN and registered mobile/email linked to your MF folios</div></div>
+        </div>
+        <div class="fg">
+          <div class="flbl">PAN Number</div>
+          <input class="finp" id="inp-pan" maxlength="10" placeholder="ABCDE1234F" oninput="this.value=this.value.toUpperCase()">
+          <div class="fhint">10-character PAN linked to all your mutual fund investments</div>
+        </div>
+        <div class="fg" style="margin-bottom:8px">
+          <div class="flbl">Verify via</div>
+          <div class="rg">
+            <label class="ro on" id="ro-mob" onclick="selCt('mobile')"><div class="rdot"></div>Mobile</label>
+            <label class="ro" id="ro-em" onclick="selCt('email')"><div class="rdot"></div>Email</label>
+          </div>
+        </div>
+        <div class="fg" id="fg-mob">
+          <div class="flbl">Mobile Number</div>
+          <input class="finp" id="inp-mob" type="tel" maxlength="10" placeholder="9876543210" style="text-transform:none">
+          <div class="fhint">Registered with CAMS/KFintech for your MF folios</div>
+        </div>
+        <div class="fg" id="fg-em" style="display:none">
+          <div class="flbl">Email ID</div>
+          <input class="finp" id="inp-em" type="email" placeholder="you@example.com" style="text-transform:none">
+        </div>
+        <button class="btn-p" onclick="goStep2()">Continue →</button>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="ws" id="ws2">
+        <div class="ws-hd"><div class="wnum done">2</div>
+          <div><div class="wtitle">Get CAS from MF Central</div><div class="wsub">Login with your PAN and download the CAS PDF</div></div>
+        </div>
+        <div class="info-box">
+          <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:7px">Your login details</div>
+          <div id="det-display" style="font-size:13px;line-height:2;color:var(--ink)"></div>
+        </div>
+        <div class="warn-box">⚠️ <strong>mfcentral.com is a marketing page</strong> — no PAN entry there. Click the button below to go directly to the login at <strong>app.mfcentral.com</strong>.</div>
+        <div class="mock-tabs">
+          <div class="mt">🏠<br><span style="font-size:10px">Home</span></div>
+          <div class="mt">📊<br><span style="font-size:10px">Portfolio</span></div>
+          <div class="mt hi">📄<br><span style="font-size:10px">CAS ← here</span></div>
+          <div class="mt">🔧<br><span style="font-size:10px">Services</span></div>
+          <div class="mt">👤<br><span style="font-size:10px">Profile</span></div>
+        </div>
+        <ul class="cl">
+          <li>Click <strong>Open MF Central</strong> → Sign In → enter your PAN → Continue</li>
+          <li>Enter the OTP sent to your registered mobile/email</li>
+          <li>Tap the <strong>CAS tab at the bottom</strong> of the screen (shown above)</li>
+          <li>Click <strong>Download</strong> on CAS Summary — or <strong>Detailed CAS</strong> for full transactions</li>
+          <li>Save the PDF → come back here → click <strong>"I have the PDF →"</strong></li>
+        </ul>
+        <div class="btn-row">
+          <a href="https://app.mfcentral.com/investor/signin" target="_blank" class="btn-g">Open MF Central ↗</a>
+          <button class="btn-s" onclick="goStep(1)">← Back</button>
+          <button class="btn-p" onclick="goStep(3)" style="margin-left:auto">I have the PDF →</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="ws" id="ws3">
+        <div class="ws-hd"><div class="wnum done">3</div>
+          <div><div class="wtitle">Upload CAS PDF</div><div class="wsub">AI reads all your fund holdings and saves to cloud automatically</div></div>
+        </div>
+        <div class="warn-box">🔑 <strong>Password tip:</strong> CAS PDFs are usually password protected. Try your <strong>PAN in lowercase</strong> (e.g. abcde1234f) or <strong>date of birth</strong> in DDMMYYYY format.</div>
+        <div class="fg" style="margin-bottom:14px">
+          <div class="flbl">PDF Password (if protected)</div>
+          <input class="finp" id="pdf-pwd" type="text" placeholder="e.g. abcde1234f or 01011980" style="text-transform:none">
+          <div class="fhint">Leave blank if your PDF opens without a password</div>
+        </div>
+        <div class="uz-wrap" id="uz-wrap">
+          <div class="uz-icon">📄</div>
+          <div class="uz-title">Drop your CAS PDF here</div>
+          <div class="uz-sub">or <b id="uz-browse">click to browse</b> — CAMS · KFintech · CDSL · NSDL</div>
+        </div>
+        <input type="file" id="fi" accept=".pdf" style="display:none">
+        <div class="status-box info" id="status-box">
+          <div class="spin" id="status-spin"></div>
+          <span id="status-txt"></span>
+        </div>
+        <div class="btn-row"><button class="btn-s" onclick="goStep(2)">← Back</button></div>
+      </div>
+    </div><!-- /wiz -->
+
+    <!-- RESULTS -->
+    <div class="mg" id="mg">
+      <div class="mc"><div class="mlbl">Total Invested</div><div class="mval" id="m-inv">—</div></div>
+      <div class="mc"><div class="mlbl">Current Value</div><div class="mval" id="m-cur">—</div></div>
+      <div class="mc" id="mc-gl"><div class="mlbl">Gain / Loss</div><div class="mval" id="m-gl">—</div><div class="msub" id="m-gp"></div></div>
+      <div class="mc gd"><div class="mlbl">Holdings</div><div class="mval" id="m-cnt">—</div><div class="msub" id="m-fol" style="color:var(--ink3)"></div></div>
+    </div>
+    <div class="sc" id="sc-tbl">
+      <div class="sc-hd"><div class="sc-title">Holdings</div><span class="sc-badge" id="sc-cnt"></span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Fund</th><th>Folio</th><th>Units</th><th>Buy NAV</th><th>Live NAV</th><th>Invested</th><th>Value</th><th>P&L</th><th>%</th></tr></thead><tbody id="tbl-body"></tbody></table></div>
+    </div>
+    <div class="sc" id="sc-alloc">
+      <div class="sc-hd"><div class="sc-title">Allocation</div><span class="sc-badge" id="alloc-sum"></span></div>
+      <div class="alloc-sec" id="alloc-body"></div>
+    </div>
+
+  </div><!-- /portfolio -->
+
+  <!-- ANALYSIS TAB -->
+  <div class="tp" id="tab-analysis">
+    <div class="ai-card">
+      <div class="ai-title">✦ AI Portfolio Analysis</div>
+      <div class="ai-body" id="ai-body">Upload your CAS PDF first — then ask anything about your portfolio here.</div>
+      <div class="ai-chips" id="ai-chips">
+        <span class="aic" onclick="askAI('Summarise my portfolio — diversification, top holdings, risk profile')">Summary ↗</span>
+        <span class="aic" onclick="askAI('Which funds are underperforming? Should I exit or review any?')">Underperformers ↗</span>
+        <span class="aic" onclick="askAI('Am I over-concentrated in any one AMC or fund category?')">Concentration ↗</span>
+        <span class="aic" onclick="askAI('Suggest how to rebalance my portfolio for better risk-adjusted returns')">Rebalance ↗</span>
+        <span class="aic" onclick="askAI('Estimate my overall XIRR based on invested amounts and current values')">XIRR ↗</span>
+      </div>
+      <div class="ai-row" id="ai-row">
+        <input class="ai-inp" id="ai-q" type="text" placeholder="Ask anything about your portfolio…" onkeydown="if(event.key==='Enter')askAI(this.value)">
+        <button class="ai-send" onclick="askAI(document.getElementById('ai-q').value)">Ask ↗</button>
+      </div>
+      <div class="ai-res" id="ai-res"></div>
+    </div>
+  </div>
+
+  <!-- NEWS TAB -->
+  <div class="tp" id="tab-news">
+    <div class="sc" style="display:block;padding:1.25rem">
+      <div style="font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:.8rem">Live Investment News</div>
+      <div class="news-chips">
+        <span class="nc" onclick="fetchNews('Indian mutual fund market news today 2026')">Markets today ↗</span>
+        <span class="nc" onclick="fetchNews('new fund offer NFO India 2026')">New NFOs ↗</span>
+        <span class="nc" onclick="fetchNews('RBI repo rate India monetary policy 2026')">RBI / Rates ↗</span>
+        <span class="nc" onclick="fetchNews('SEBI mutual fund regulation circular 2026')">SEBI Updates ↗</span>
+        <span class="nc" onclick="fetchNews('SIP systematic investment plan India 2026')">SIP Trends ↗</span>
+        <span class="nc" onclick="fetchNews('large cap mid cap equity fund performance India 2026')">Fund Performance ↗</span>
+      </div>
+      <div class="news-body" id="news-body"><span style="color:var(--ink3)">Click a topic above to load latest news.</span></div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─────────────────────────────────────────
+// FIREBASE INIT
+// ─────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyDo0XySBQ6Ck8SqDiC97Hq22ZVxO2kCQTg",
+  authDomain: "mf-bulletin.firebaseapp.com",
+  projectId: "mf-bulletin",
+  storageBucket: "mf-bulletin.firebasestorage.app",
+  messagingSenderId: "1097015339198",
+  appId: "1:1097015339198:web:6dd2f33acb4b9820a816ef"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const DOC_SETTINGS = db.collection('mf_bulletin').doc('settings');
+const DOC_PORTFOLIO = db.collection('mf_bulletin').doc('portfolio');
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let H = [], API_KEY = '', ctType = 'mobile';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ─────────────────────────────────────────
+// INIT — load from Firebase on page open
+// ─────────────────────────────────────────
+async function init() {
+  try {
+    // Load API key
+    const settingsSnap = await DOC_SETTINGS.get();
+    if (settingsSnap.exists && settingsSnap.data().anthropic_key) {
+      API_KEY = settingsSnap.data().anthropic_key;
+      showApiOk(API_KEY);
+    }
+
+    // Load portfolio
+    const portfolioSnap = await DOC_PORTFOLIO.get();
+    if (portfolioSnap.exists && portfolioSnap.data().holdings?.length) {
+      const data = portfolioSnap.data();
+      H = data.holdings;
+      const savedAt = data.saved_at?.toDate ? data.saved_at.toDate() : new Date(data.saved_at);
+      showSavedBanner(H.length, savedAt);
+      document.getElementById('wiz').style.display = 'none';
+      await fetchAllNAVs();
+    }
+  } catch(e) {
+    console.warn('Firebase init error:', e.message);
+  }
+}
+
+// ─────────────────────────────────────────
+// API KEY — save to Firebase
+// ─────────────────────────────────────────
+async function saveApiKey() {
+  const v = document.getElementById('api-key-inp').value.trim();
+  if (!v.startsWith('sk-ant')) { alert('Please enter a valid Anthropic API key starting with sk-ant'); return; }
+  try {
+    await DOC_SETTINGS.set({ anthropic_key: v }, { merge: true });
+    API_KEY = v;
+    showApiOk(v);
+  } catch(e) { alert('Could not save to Firebase: ' + e.message); }
+}
+function showApiOk(key) {
+  document.getElementById('setup-banner').style.display = 'none';
+  const ok = document.getElementById('setup-ok');
+  ok.style.display = 'flex';
+  document.getElementById('setup-ok-key').textContent = key.substring(0,20) + '…';
+}
+async function clearApiKey() {
+  await DOC_SETTINGS.set({ anthropic_key: '' }, { merge: true });
+  API_KEY = '';
+  document.getElementById('setup-banner').style.display = 'block';
+  document.getElementById('setup-ok').style.display = 'none';
+  document.getElementById('api-key-inp').value = '';
+}
+
+// ─────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────
+function swTab(n) {
+  ['portfolio','analysis','news'].forEach((t,i) => {
+    document.getElementById('tab-'+t).classList.toggle('on', t===n);
+    document.querySelectorAll('.tab-btn')[i].classList.toggle('on', t===n);
+  });
+}
+
+// ─────────────────────────────────────────
+// WIZARD
+// ─────────────────────────────────────────
+function selCt(t) {
+  ctType = t;
+  document.getElementById('ro-mob').classList.toggle('on', t==='mobile');
+  document.getElementById('ro-em').classList.toggle('on', t==='email');
+  document.getElementById('fg-mob').style.display = t==='mobile' ? 'flex' : 'none';
+  document.getElementById('fg-em').style.display  = t==='email'  ? 'flex' : 'none';
+}
+function goStep2() {
+  const pan = document.getElementById('inp-pan').value.trim().toUpperCase();
+  if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) { alert('Enter a valid PAN (e.g. ABCDE1234F)'); return; }
+  if (ctType==='mobile') { const m=document.getElementById('inp-mob').value.trim(); if(!/^[6-9]\d{9}$/.test(m)){alert('Enter a valid 10-digit mobile number');return;} }
+  else { const e=document.getElementById('inp-em').value.trim(); if(!e.includes('@')){alert('Enter a valid email');return;} }
+  const contact = ctType==='mobile' ? document.getElementById('inp-mob').value.trim() : document.getElementById('inp-em').value.trim();
+  document.getElementById('det-display').innerHTML =
+    `<span style="font-size:11px;color:var(--ink3)">PAN</span><br>
+     <strong style="font-size:15px;font-family:'DM Mono',monospace;letter-spacing:1px">${pan}</strong><br>
+     <span style="font-size:11px;color:var(--ink3)">${ctType==='mobile'?'Mobile':'Email'}</span><br>
+     <strong>${contact}</strong>`;
+  goStep(2);
+}
+function goStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('ws'+i).classList.toggle('on', i===n);
+    const d = document.getElementById('d'+i);
+    d.classList.remove('act','done');
+    if (i<n) d.classList.add('done'); else if(i===n) d.classList.add('act');
+  });
+}
+
+// ─────────────────────────────────────────
+// FILE UPLOAD
+// ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+  const fi = document.getElementById('fi');
+  const uz = document.getElementById('uz-wrap');
+  fi.addEventListener('change', () => { if(fi.files[0]) startProcessing(fi.files[0]); fi.value=''; });
+  document.getElementById('uz-browse').addEventListener('click', e => { e.stopPropagation(); fi.click(); });
+  uz.addEventListener('click', () => fi.click());
+  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('dv'); });
+  uz.addEventListener('dragleave', () => uz.classList.remove('dv'));
+  uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('dv'); if(e.dataTransfer.files[0]) startProcessing(e.dataTransfer.files[0]); });
+});
+
+function setStatus(msg, type, spin) {
+  const box=document.getElementById('status-box'), txt=document.getElementById('status-txt'), sp=document.getElementById('status-spin');
+  box.style.display='flex'; box.className='status-box '+(type||'info');
+  txt.textContent=msg; sp.style.display=spin?'inline-block':'none';
+}
+
+function startProcessing(file) {
+  if (!file.name.toLowerCase().endsWith('.pdf')) { alert('Please select a PDF file.'); return; }
+  if (!API_KEY) { alert('Please enter your Anthropic API key first.'); return; }
+  setStatus('Reading PDF…', 'info', true);
+  extractPDF(file);
+}
+
+// ─────────────────────────────────────────
+// PDF.JS — extract text
+// ─────────────────────────────────────────
+async function extractPDF(file) {
+  try {
+    const buf = await file.arrayBuffer();
+    const pwd = document.getElementById('pdf-pwd').value.trim();
+    const pdf = await pdfjsLib.getDocument({ data: buf, password: pwd||undefined }).promise;
+    setStatus(`PDF loaded (${pdf.numPages} pages) — extracting text…`, 'info', true);
+    let text = '';
+    for (let i=1; i<=pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(x=>x.str).join(' ') + '\n';
+    }
+    if (!text.trim()) { setStatus('PDF appears empty or scanned. Make sure it is a text-based CAS PDF.', 'err', false); return; }
+    setStatus(`Extracted text — sending to AI for parsing…`, 'info', true);
+    await parseWithClaude(text);
+  } catch(err) {
+    if (err.name==='PasswordException') setStatus('Wrong password. Try PAN in lowercase (e.g. abcde1234f) or DOB (DDMMYYYY).', 'err', false);
+    else setStatus('Error reading PDF: '+err.message, 'err', false);
+  }
+}
+
+// ─────────────────────────────────────────
+// CLAUDE — parse holdings from text
+// ─────────────────────────────────────────
+async function parseWithClaude(text) {
+  const sys = `You are an expert at parsing Indian mutual fund CAS (Consolidated Account Statement) text from CAMS, KFintech, CDSL, and NSDL.
+Extract ALL mutual fund holdings. Return ONLY a raw JSON array — no markdown, no explanation, no code fences.
+Each object: fund_name (string), amc (string), folio (string), category (one of: Equity/Debt/Hybrid/Liquid/ELSS/Index-ETF/Other), units (number), avg_nav (number), invested (number), nav_date (string or null).
+Use null for missing. Return [] if nothing found.`;
+
+  let res, data;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:4000, system:sys,
+        messages:[{role:'user',content:`Extract mutual fund holdings from this CAS statement:\n\n${text.substring(0,80000)}`}]
+      })
+    });
+    data = await res.json();
+  } catch(e) { setStatus('Network error: '+e.message,'err',false); return; }
+
+  if (!res.ok) { setStatus('API error: '+(data?.error?.message||res.status),'err',false); return; }
+
+  let raw = data.content?.find(b=>b.type==='text')?.text||'[]';
+  raw = raw.trim().replace(/^```json?\n?/,'').replace(/```$/,'').trim();
+  let parsed;
+  try { parsed=JSON.parse(raw); }
+  catch(e) { const m=raw.match(/\[[\s\S]*\]/); if(m){try{parsed=JSON.parse(m[0]);}catch(e2){setStatus('Could not parse AI response. Please try again.','err',false);return;}}else{setStatus('No holdings found in PDF. Is this a valid CAS statement?','err',false);return;} }
+
+  if (!Array.isArray(parsed)||!parsed.length) { setStatus('No MF holdings found. Please ensure this is a valid CAS PDF.','err',false); return; }
+
+  H = parsed;
+
+  // Save to Firebase
+  setStatus(`Found ${H.length} funds — saving to cloud…`, 'info', true);
+  try {
+    await DOC_PORTFOLIO.set({ holdings: H, saved_at: firebase.firestore.FieldValue.serverTimestamp() });
+    setStatus(`Saved to Firebase — fetching live NAVs…`, 'info', true);
+  } catch(e) { setStatus(`Could not save to Firebase: ${e.message}. Continuing with local data…`,'info',true); }
+
+  document.getElementById('wiz').style.display = 'none';
+  showSavedBanner(H.length, new Date());
+  document.getElementById('btn-ref').style.display = 'inline-block';
+  await fetchAllNAVs();
+}
+
+// ─────────────────────────────────────────
+// SAVED BANNER
+// ─────────────────────────────────────────
+function showSavedBanner(count, date) {
+  const b = document.getElementById('saved-banner');
+  b.style.display = 'flex';
+  document.getElementById('saved-info').textContent = `✓ Portfolio loaded from Firebase — ${count} funds`;
+  document.getElementById('saved-meta').textContent = `Last uploaded: ${date ? date.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'}`;
+}
+
+async function clearPortfolio() {
+  if (!confirm('Clear saved portfolio and re-upload a new CAS PDF?')) return;
+  await DOC_PORTFOLIO.delete();
+  H = [];
+  document.getElementById('saved-banner').style.display = 'none';
+  document.getElementById('wiz').style.display = 'block';
+  document.getElementById('mg').style.display = 'none';
+  document.getElementById('sc-tbl').style.display = 'none';
+  document.getElementById('sc-alloc').style.display = 'none';
+  document.getElementById('btn-ref').style.display = 'none';
+  document.getElementById('status-box').style.display = 'none';
+  document.getElementById('ai-chips').style.display = 'none';
+  document.getElementById('ai-row').style.display = 'none';
+  goStep(1);
+}
+
+// ─────────────────────────────────────────
+// NAV — mfapi.in (CORS open)
+// ─────────────────────────────────────────
+const CACHE = {};
+async function getNav(name) {
+  if (CACHE[name]) return CACHE[name];
+  try {
+    const q = encodeURIComponent(name.substring(0,45));
+    const sr = await fetch('https://api.mfapi.in/mf/search?q='+q);
+    const sl = await sr.json();
+    if (!sl?.length) return null;
+    const nr = await fetch('https://api.mfapi.in/mf/'+sl[0].schemeCode);
+    const nd = await nr.json();
+    const nav=parseFloat(nd?.data?.[0]?.nav), date=nd?.data?.[0]?.date;
+    if (!nav) return null;
+    const r={nav,date};
+    if(nd.data?.length>=252){const o=parseFloat(nd.data[251].nav);r.r1y=((nav-o)/o*100).toFixed(1);}
+    if(nd.data?.length>=756){const o=parseFloat(nd.data[755].nav);r.r3y=(((nav/o)**(1/3)-1)*100).toFixed(1);}
+    CACHE[name]=r; return r;
+  } catch(e){return null;}
+}
+
+async function fetchAllNAVs() {
+  document.getElementById('status-box').style.display='flex';
+  for (let i=0;i<H.length;i+=4) {
+    const batch=H.slice(i,i+4);
+    setStatus(`Fetching live NAVs… ${Math.min(i+4,H.length)}/${H.length}`,'info',true);
+    await Promise.all(batch.map(async h=>{
+      const n=await getNav(h.fund_name);
+      if(n){h.nav=n.nav;h.nav_date=n.date||h.nav_date;h.r1y=n.r1y;h.r3y=n.r3y;}
+    }));
+  }
+  document.getElementById('status-box').style.display='none';
+  setSyncTime(); render();
+  document.getElementById('ai-chips').style.display='flex';
+  document.getElementById('ai-row').style.display='flex';
+  const amcs=[...new Set(H.map(h=>h.amc).filter(Boolean))].length;
+  document.getElementById('ai-body').textContent=`Portfolio loaded — ${H.length} funds across ${amcs} AMCs. Ask me anything.`;
+}
+
+async function refreshNAVs() {
+  Object.keys(CACHE).forEach(k=>delete CACHE[k]);
+  document.getElementById('btn-ref').textContent='⏳ Refreshing…';
+  await fetchAllNAVs();
+  document.getElementById('btn-ref').innerHTML='↻ Refresh NAV';
+  document.getElementById('btn-ref').style.display='inline-block';
+}
+
+// ─────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────
+const fI=n=>(n||n===0)?'₹'+Math.round(n).toLocaleString('en-IN'):'—';
+const fD=n=>n?'₹'+parseFloat(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+const pp=(a,b)=>(a&&b)?(((b-a)/a)*100).toFixed(2):null;
+const CATS={'Equity':'p-eq','Debt':'p-debt','Hybrid':'p-hyb','Liquid':'p-liq','ELSS':'p-eq','Index-ETF':'p-idx','Other':'p-oth'};
+const AC=['#1a6b4a','#1a56b0','#b8860b','#6b21a8','#c0392b','#166534','#a07000','#2d9969','#4a90d9','#d4a017'];
+
+function render() {
+  let tI=0,tC=0;
+  H.forEach(h=>{tI+=(h.invested||0);tC+=(h.nav&&h.units)?h.units*h.nav:(h.invested||0);});
+  const gl=tC-tI, gp=tI?pp(tI,tC):null;
+  document.getElementById('m-inv').textContent=fI(tI);
+  document.getElementById('m-cur').textContent=fI(tC);
+  const gEl=document.getElementById('m-gl'); gEl.textContent=fI(Math.abs(gl)); gEl.className='mval '+(gl>=0?'up':'dn');
+  const gpEl=document.getElementById('m-gp'); gpEl.textContent=gp?(gl>=0?'+':'-')+Math.abs(gp)+'%':''; gpEl.className='msub '+(gl>=0?'up':'dn');
+  document.getElementById('mc-gl').className='mc '+(gl<0?'rd':'');
+  document.getElementById('m-cnt').textContent=H.length;
+  const fols=[...new Set(H.map(h=>h.folio).filter(Boolean))].length;
+  document.getElementById('m-fol').textContent=fols+' folio'+(fols!==1?'s':'');
+  document.getElementById('mg').style.display='grid';
+  document.getElementById('sc-tbl').style.display='block';
+  document.getElementById('sc-alloc').style.display='block';
+  document.getElementById('sc-cnt').textContent=H.length+' fund'+(H.length!==1?'s':'');
+
+  document.getElementById('tbl-body').innerHTML=H.map((h,i)=>{
+    const inv=h.invested||0,cur=(h.nav&&h.units)?h.units*h.nav:null,pl=cur?cur-inv:null,pct=inv&&cur?pp(inv,cur):null;
+    const pc=CATS[h.category||'Other']||'p-oth';
+    return `<tr>
+      <td style="max-width:210px;white-space:normal"><div class="fn">${h.fund_name}</div><div class="fm">${h.amc||''}</div><span class="pill ${pc}">${h.category||'Other'}</span></td>
+      <td><span class="ftag">${h.folio||'—'}</span></td>
+      <td class="num">${h.units?parseFloat(h.units).toLocaleString('en-IN',{minimumFractionDigits:3,maximumFractionDigits:3}):'—'}</td>
+      <td class="num">${h.avg_nav?fD(h.avg_nav):'—'}</td>
+      <td><div class="num">${h.nav?fD(h.nav):'—'}</div><div class="nav-dt">${h.nav_date||''}</div></td>
+      <td class="num">${fI(inv)}</td>
+      <td class="num">${cur?fI(cur):'—'}</td>
+      <td class="num ${pl?(pl>=0?'up':'dn'):''}">${pl?fI(Math.abs(pl)):'—'}</td>
+      <td class="num ${pct?(parseFloat(pct)>=0?'up':'dn'):''}">${pct?(parseFloat(pct)>=0?'+':'−')+Math.abs(pct)+'%':'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const cats={};H.forEach(h=>{cats[h.category||'Other']=(cats[h.category||'Other']||0)+1;});
+  document.getElementById('alloc-sum').textContent=Object.entries(cats).map(([k,v])=>`${v} ${k}`).join(' · ');
+  document.getElementById('alloc-body').innerHTML=H.map((h,i)=>{
+    const p=tI?(h.invested||0)/tI*100:0;
+    return `<div class="ar"><div class="al" title="${h.fund_name}">${h.fund_name.length>28?h.fund_name.substring(0,28)+'…':h.fund_name}</div><div class="ab"><div class="af" style="width:${p.toFixed(1)}%;background:${AC[i%AC.length]}"></div></div><div class="ap">${p.toFixed(1)}%</div></div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────
+// AI ANALYSIS
+// ─────────────────────────────────────────
+async function askAI(q) {
+  if (!q||!H.length){alert('Upload your CAS PDF first.');return;}
+  if (!API_KEY){alert('Please enter your API key first.');return;}
+  document.getElementById('ai-q').value='';
+  const res=document.getElementById('ai-res'); res.style.display='block';
+  res.innerHTML='<span class="spin" style="border-top-color:rgba(255,255,255,.5)"></span> Analysing…';
+  let tI=0,tC=0; H.forEach(h=>{tI+=(h.invested||0);tC+=(h.nav&&h.units)?h.units*h.nav:(h.invested||0);});
+  const ctx=`${H.length} funds | Invested: ₹${Math.round(tI).toLocaleString('en-IN')} | Current: ₹${Math.round(tC).toLocaleString('en-IN')}\n`+
+    H.map(h=>`• ${h.fund_name} (${h.category||'?'}) | ₹${Math.round(h.invested||0).toLocaleString('en-IN')} invested${h.r1y?' | 1Y: '+h.r1y+'%':''}`).join('\n');
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,
+        messages:[{role:'user',content:`You are an expert Indian mutual fund advisor.\n\nPortfolio:\n${ctx}\n\nQuestion: ${q}\n\nGive concise, actionable advice specific to these holdings.`}]})});
+    const d=await r.json();
+    const t=d.content?.find(b=>b.type==='text')?.text||'No response.';
+    res.innerHTML=t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  } catch(e){res.innerHTML='Error: '+e.message;}
+}
+
+// ─────────────────────────────────────────
+// NEWS
+// ─────────────────────────────────────────
+async function fetchNews(topic) {
+  if (!API_KEY){alert('Please enter your API key first.');return;}
+  const box=document.getElementById('news-body');
+  box.innerHTML='<span class="spin"></span> Fetching latest news…';
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:`Search: "${topic}". Give 5 recent news items for Indian MF investors. Bold headline, 2-line summary, source. Number 1–5.`}]})});
+    const d=await r.json();
+    const t=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'No results.';
+    box.innerHTML=t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+  } catch(e){box.innerHTML='Error: '+e.message;}
+}
+
+function setSyncTime(){document.getElementById('sync-lbl').textContent='Updated '+new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+</script>
+</body>
+</html>
