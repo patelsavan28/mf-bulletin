@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MF Investment Bulletin</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<!-- PDF.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -24,8 +22,6 @@
   --sh:0 2px 16px rgba(28,28,46,.07);
 }
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;min-height:100vh}
-
-/* HEADER */
 .hdr{background:var(--ink);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
 .hdr-brand{font-family:'DM Serif Display',serif;font-size:20px}
 .hdr-sub{font-size:10px;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;letter-spacing:.5px;margin-top:1px}
@@ -33,26 +29,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--ink);font-
 .sync-lbl{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.35)}
 .btn-ref{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 13px;border-radius:20px;font-size:11px;cursor:pointer;display:none;font-family:'Outfit',sans-serif;transition:background .2s}
 .btn-ref:hover{background:rgba(255,255,255,.2)}
-
-/* SETUP BANNER */
-.setup-banner{background:var(--gold2);border:1px solid #e0c97a;border-radius:var(--r);padding:1.1rem 1.25rem;margin-bottom:1.25rem}
-.setup-title{font-weight:600;font-size:13px;color:var(--gold);margin-bottom:5px;display:flex;align-items:center;gap:6px}
-.setup-desc{font-size:12px;color:var(--gold);margin-bottom:10px;line-height:1.5}
-.setup-row{display:flex;gap:8px}
-.setup-inp{flex:1;border:1px solid #e0c97a;border-radius:var(--r2);padding:9px 12px;font-size:13px;font-family:'Outfit',sans-serif;background:#fff;color:var(--ink);outline:none}
-.setup-inp:focus{border-color:var(--gold)}
-.setup-save{background:var(--gold);color:#fff;border:none;border-radius:var(--r2);padding:9px 18px;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;white-space:nowrap;transition:background .2s}
-.setup-save:hover{background:#9a7009}
-.setup-ok{background:var(--green3);border:1px solid #b2ddc8;border-radius:var(--r);padding:.75rem 1.1rem;margin-bottom:1.25rem;font-size:13px;color:var(--green);display:none;align-items:center;justify-content:space-between}
-.setup-ok-key{font-family:'DM Mono',monospace;font-size:11px}
-
-/* TABS */
+.wrap{max-width:920px;margin:0 auto;padding:1.5rem 1rem 5rem}
 .tab-bar{display:flex;gap:2px;background:var(--bg2);border-radius:10px;padding:3px;margin-bottom:1.25rem}
 .tab-btn{flex:1;padding:8px 8px;border:none;background:transparent;border-radius:8px;font-size:13px;cursor:pointer;color:var(--ink3);font-family:'Outfit',sans-serif;font-weight:500;transition:all .2s}
 .tab-btn.on{background:var(--bgc);color:var(--ink);box-shadow:var(--sh)}
 .tp{display:none}.tp.on{display:block}
-
-/* WIZARD */
 .wiz{background:var(--bgc);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:1.25rem;overflow:hidden}
 .wiz-prog{display:flex}
 .wdot{flex:1;height:3px;background:var(--border2);transition:background .3s}
@@ -91,29 +72,20 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--ink);font-
 .cl{list-style:none;padding:0;margin-bottom:12px}
 .cl li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink2);padding:4px 0;line-height:1.45}
 .cl li::before{content:'→';color:var(--green2);font-weight:600;flex-shrink:0;margin-top:1px}
-
-/* SAVED PORTFOLIO BANNER */
 .saved-banner{background:var(--green3);border:1px solid #b2ddc8;border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.25rem;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.saved-info{font-size:13px;color:var(--green)}
+.saved-info{font-size:13px;color:var(--green);font-weight:500}
 .saved-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--green2);margin-top:2px}
-.saved-actions{display:flex;gap:8px;flex-shrink:0}
-
-/* UPLOAD */
 .uz-wrap{border:2px dashed var(--border);border-radius:var(--r2);padding:2rem 1.5rem;text-align:center;background:var(--bg);transition:all .2s;cursor:pointer}
 .uz-wrap:hover,.uz-wrap.dv{border-color:var(--green2);background:var(--green3)}
 .uz-icon{font-size:36px;opacity:.3;margin-bottom:8px}
 .uz-title{font-size:15px;font-weight:500;color:var(--ink);margin-bottom:3px}
 .uz-sub{font-size:12px;color:var(--ink3)}
 .uz-sub b{color:var(--green2);cursor:pointer}
-
-/* STATUS */
 .status-box{border-radius:var(--r2);padding:11px 14px;margin-top:12px;font-size:13px;display:none;align-items:center;gap:8px;line-height:1.45}
 .status-box.info{background:var(--green3);border:1px solid #b2ddc8;color:var(--green)}
 .status-box.err{background:var(--red2);border:1px solid #f5c6c2;color:var(--red)}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.08);border-top-color:var(--green2);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
-
-/* METRICS */
 .mg{display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.25rem}
 .mc{background:var(--bgc);border:1px solid var(--border2);border-radius:var(--r);padding:1rem 1.1rem;position:relative;overflow:hidden}
 .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green)}
@@ -122,8 +94,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--ink);font-
 .mval{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);letter-spacing:-.4px}
 .mval.up{color:var(--green)}.mval.dn{color:var(--red)}
 .msub{font-size:11px;margin-top:2px}.msub.up{color:var(--green2)}.msub.dn{color:var(--red)}
-
-/* TABLE */
 .sc{background:var(--bgc);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:1.25rem;overflow:hidden;display:none}
 .sc-hd{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.2rem;border-bottom:1px solid var(--border2);background:var(--bg)}
 .sc-title{font-family:'DM Serif Display',serif;font-size:15px;color:var(--ink)}
@@ -142,8 +112,6 @@ tr:hover td{background:var(--bg)}
 .num{font-family:'DM Mono',monospace}.up{color:var(--green)}.dn{color:var(--red)}
 .ftag{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3);background:var(--bg2);padding:1px 5px;border-radius:3px}
 .nav-dt{font-size:10px;color:var(--ink3)}
-
-/* ALLOC */
 .alloc-sec{padding:1rem 1.2rem}
 .ar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .al{font-size:12px;color:var(--ink2);width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
@@ -151,29 +119,30 @@ tr:hover td{background:var(--bg)}
 .af{height:100%;border-radius:3px;transition:width .7s ease}
 .ap{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink3);width:36px;text-align:right;flex-shrink:0}
 
-/* AI */
-.ai-card{background:var(--ink);border-radius:var(--r);padding:1.3rem 1.5rem;margin-bottom:1.25rem}
-.ai-title{font-family:'DM Serif Display',serif;font-size:15px;color:rgba(255,255,255,.65);margin-bottom:.7rem}
-.ai-body{font-size:13px;color:rgba(255,255,255,.75);line-height:1.65}
-.ai-chips{display:none;flex-wrap:wrap;gap:6px;margin-top:.7rem}
-.aic{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.55);font-size:11px;padding:4px 10px;border-radius:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
-.aic:hover{background:rgba(255,255,255,.15);color:#fff}
-.ai-row{display:none;gap:8px;margin-top:.7rem}
-.ai-inp{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:8px 11px;font-size:12px;color:#fff;font-family:'Outfit',sans-serif;outline:none}
-.ai-inp::placeholder{color:rgba(255,255,255,.28)}
-.ai-inp:focus{border-color:rgba(255,255,255,.3)}
-.ai-send{background:var(--green2);border:none;border-radius:8px;color:#fff;padding:8px 14px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .2s}
-.ai-send:hover{background:#238a58}
-.ai-res{margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:8px;font-size:13px;color:rgba(255,255,255,.78);line-height:1.65;display:none}
+/* ASK CLAUDE CARD */
+.claude-card{background:var(--ink);border-radius:var(--r);padding:1.3rem 1.5rem;margin-bottom:1.25rem}
+.claude-title{font-family:'DM Serif Display',serif;font-size:15px;color:rgba(255,255,255,.7);margin-bottom:.5rem}
+.claude-desc{font-size:12.5px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:1rem}
+.claude-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
+.cc{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.6);font-size:11px;padding:5px 11px;border-radius:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.cc:hover{background:rgba(255,255,255,.15);color:#fff}
+.claude-box{background:rgba(255,255,255,.05);border-radius:var(--r2);padding:1rem 1.1rem;margin-bottom:10px;font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.6);line-height:1.7;display:none;max-height:260px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.claude-copy{background:var(--green2);color:#fff;border:none;border-radius:var(--r2);padding:9px 18px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;display:none;align-items:center;gap:6px;transition:background .2s}
+.claude-copy:hover{background:#238a58}
+.claude-link{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.7);font-size:12px;padding:8px 14px;border-radius:var(--r2);text-decoration:none;font-family:'Outfit',sans-serif;transition:all .2s;margin-left:8px}
+.claude-link:hover{background:rgba(255,255,255,.15);color:#fff}
 
 /* NEWS */
-.news-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.news-item{border-left:3px solid var(--green2);padding:8px 12px;margin-bottom:10px;background:var(--bgc);border-radius:0 var(--r2) var(--r2) 0}
+.news-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.news-desc{font-size:12px;color:var(--ink2);line-height:1.5}
+.news-src{font-size:10px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:3px}
+.news-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .nc{background:var(--bg2);border:1px solid var(--border);color:var(--ink2);font-size:12px;padding:4px 10px;border-radius:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
 .nc:hover{background:var(--green3);color:var(--green);border-color:var(--green2)}
+.nc.on{background:var(--green3);color:var(--green);border-color:var(--green2)}
 .news-body{font-size:13px;color:var(--ink2);line-height:1.7;min-height:50px}
 
-/* WRAP */
-.wrap{max-width:920px;margin:0 auto;padding:1.5rem 1rem 5rem}
 @media(max-width:600px){.mg{grid-template-columns:1fr 1fr}.hdr-sub{display:none}}
 </style>
 </head>
@@ -192,47 +161,28 @@ tr:hover td{background:var(--bg)}
 
 <div class="wrap">
 
-  <!-- API KEY SETUP -->
-  <div id="setup-banner" class="setup-banner">
-    <div class="setup-title">🔑 Enter your Anthropic API Key</div>
-    <div class="setup-desc">Required for AI-powered PDF parsing and portfolio analysis. Your key is saved securely to Firebase — enter it once, works everywhere.</div>
-    <div class="setup-row">
-      <input class="setup-inp" id="api-key-inp" type="password" placeholder="sk-ant-api03-…">
-      <button class="setup-save" onclick="saveApiKey()">Save to Cloud</button>
-    </div>
-    <div style="font-size:11px;color:var(--gold);margin-top:6px">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--gold);text-decoration:underline">console.anthropic.com</a></div>
-  </div>
-  <div id="setup-ok" class="setup-ok">
-    <div>
-      <div style="font-weight:500">✓ API key saved to Firebase</div>
-      <div class="setup-ok-key" id="setup-ok-key"></div>
-    </div>
-    <button onclick="clearApiKey()" class="btn-danger">Change Key</button>
-  </div>
-
-  <!-- TABS -->
   <div class="tab-bar">
-    <button class="tab-btn on" onclick="swTab('portfolio')">Portfolio</button>
-    <button class="tab-btn" onclick="swTab('analysis')">AI Analysis</button>
-    <button class="tab-btn" onclick="swTab('news')">News</button>
+    <button class="tab-btn on" onclick="swTab('portfolio')">📊 Portfolio</button>
+    <button class="tab-btn" onclick="swTab('analysis')">🤖 Ask Claude</button>
+    <button class="tab-btn" onclick="swTab('news')">📰 News</button>
   </div>
 
   <!-- PORTFOLIO TAB -->
   <div class="tp on" id="tab-portfolio">
 
-    <!-- SAVED PORTFOLIO BANNER (shows when Firebase has data) -->
+    <!-- Saved banner -->
     <div class="saved-banner" id="saved-banner">
       <div>
-        <div class="saved-info" id="saved-info">Portfolio loaded from cloud</div>
+        <div class="saved-info" id="saved-info">✓ Portfolio loaded from cloud</div>
         <div class="saved-meta" id="saved-meta"></div>
       </div>
-      <div class="saved-actions">
+      <div style="display:flex;gap:8px;flex-shrink:0">
         <button class="btn-ref" style="display:inline-block" onclick="refreshNAVs()">↻ Refresh NAV</button>
-        <button class="btn-danger" onclick="clearPortfolio()">Clear & Re-upload</button>
+        <button class="btn-danger" onclick="clearPortfolio()">Clear &amp; Re-upload</button>
       </div>
     </div>
 
-    <!-- WIZARD (hidden once data loaded from Firebase) -->
+    <!-- WIZARD -->
     <div class="wiz" id="wiz">
       <div class="wiz-prog">
         <div class="wdot act" id="d1"></div>
@@ -260,7 +210,7 @@ tr:hover td{background:var(--bg)}
         <div class="fg" id="fg-mob">
           <div class="flbl">Mobile Number</div>
           <input class="finp" id="inp-mob" type="tel" maxlength="10" placeholder="9876543210" style="text-transform:none">
-          <div class="fhint">Registered with CAMS/KFintech for your MF folios</div>
+          <div class="fhint">Registered with CAMS/KFintech</div>
         </div>
         <div class="fg" id="fg-em" style="display:none">
           <div class="flbl">Email ID</div>
@@ -272,13 +222,13 @@ tr:hover td{background:var(--bg)}
       <!-- Step 2 -->
       <div class="ws" id="ws2">
         <div class="ws-hd"><div class="wnum done">2</div>
-          <div><div class="wtitle">Get CAS from MF Central</div><div class="wsub">Login with your PAN and download the CAS PDF</div></div>
+          <div><div class="wtitle">Get CAS from MF Central</div><div class="wsub">Login and download your CAS PDF</div></div>
         </div>
         <div class="info-box">
           <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:7px">Your login details</div>
           <div id="det-display" style="font-size:13px;line-height:2;color:var(--ink)"></div>
         </div>
-        <div class="warn-box">⚠️ <strong>mfcentral.com is a marketing page</strong> — no PAN entry there. Click the button below to go directly to the login at <strong>app.mfcentral.com</strong>.</div>
+        <div class="warn-box">⚠️ <strong>mfcentral.com is a marketing page</strong> — no PAN entry there. Use the button below to go directly to the actual login at <strong>app.mfcentral.com</strong></div>
         <div class="mock-tabs">
           <div class="mt">🏠<br><span style="font-size:10px">Home</span></div>
           <div class="mt">📊<br><span style="font-size:10px">Portfolio</span></div>
@@ -288,10 +238,10 @@ tr:hover td{background:var(--bg)}
         </div>
         <ul class="cl">
           <li>Click <strong>Open MF Central</strong> → Sign In → enter your PAN → Continue</li>
-          <li>Enter the OTP sent to your registered mobile/email</li>
-          <li>Tap the <strong>CAS tab at the bottom</strong> of the screen (shown above)</li>
-          <li>Click <strong>Download</strong> on CAS Summary — or <strong>Detailed CAS</strong> for full transactions</li>
-          <li>Save the PDF → come back here → click <strong>"I have the PDF →"</strong></li>
+          <li>Enter OTP sent to your registered mobile/email</li>
+          <li>Tap <strong>CAS tab at the bottom</strong> of the screen (shown above)</li>
+          <li>Click <strong>Download</strong> on CAS Summary</li>
+          <li>Save PDF → come back here → click <strong>"I have the PDF →"</strong></li>
         </ul>
         <div class="btn-row">
           <a href="https://app.mfcentral.com/investor/signin" target="_blank" class="btn-g">Open MF Central ↗</a>
@@ -303,13 +253,13 @@ tr:hover td{background:var(--bg)}
       <!-- Step 3 -->
       <div class="ws" id="ws3">
         <div class="ws-hd"><div class="wnum done">3</div>
-          <div><div class="wtitle">Upload CAS PDF</div><div class="wsub">AI reads all your fund holdings and saves to cloud automatically</div></div>
+          <div><div class="wtitle">Upload CAS PDF</div><div class="wsub">Parsed locally — no API key needed — saved to Firebase cloud</div></div>
         </div>
-        <div class="warn-box">🔑 <strong>Password tip:</strong> CAS PDFs are usually password protected. Try your <strong>PAN in lowercase</strong> (e.g. abcde1234f) or <strong>date of birth</strong> in DDMMYYYY format.</div>
+        <div class="warn-box">🔑 <strong>Password tip:</strong> Try your <strong>PAN in lowercase</strong> (e.g. abcde1234f) or <strong>date of birth</strong> in DDMMYYYY format.</div>
         <div class="fg" style="margin-bottom:14px">
           <div class="flbl">PDF Password (if protected)</div>
           <input class="finp" id="pdf-pwd" type="text" placeholder="e.g. abcde1234f or 01011980" style="text-transform:none">
-          <div class="fhint">Leave blank if your PDF opens without a password</div>
+          <div class="fhint">Leave blank if PDF opens without password</div>
         </div>
         <div class="uz-wrap" id="uz-wrap">
           <div class="uz-icon">📄</div>
@@ -323,68 +273,90 @@ tr:hover td{background:var(--bg)}
         </div>
         <div class="btn-row"><button class="btn-s" onclick="goStep(2)">← Back</button></div>
       </div>
-    </div><!-- /wiz -->
+    </div>
 
-    <!-- RESULTS -->
+    <!-- METRICS -->
     <div class="mg" id="mg">
       <div class="mc"><div class="mlbl">Total Invested</div><div class="mval" id="m-inv">—</div></div>
       <div class="mc"><div class="mlbl">Current Value</div><div class="mval" id="m-cur">—</div></div>
       <div class="mc" id="mc-gl"><div class="mlbl">Gain / Loss</div><div class="mval" id="m-gl">—</div><div class="msub" id="m-gp"></div></div>
       <div class="mc gd"><div class="mlbl">Holdings</div><div class="mval" id="m-cnt">—</div><div class="msub" id="m-fol" style="color:var(--ink3)"></div></div>
     </div>
+
+    <!-- TABLE -->
     <div class="sc" id="sc-tbl">
       <div class="sc-hd"><div class="sc-title">Holdings</div><span class="sc-badge" id="sc-cnt"></span></div>
-      <div class="tbl-wrap"><table><thead><tr><th>Fund</th><th>Folio</th><th>Units</th><th>Buy NAV</th><th>Live NAV</th><th>Invested</th><th>Value</th><th>P&L</th><th>%</th></tr></thead><tbody id="tbl-body"></tbody></table></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Fund</th><th>Folio</th><th>Units</th><th>Buy NAV</th><th>Live NAV</th><th>Invested</th><th>Value</th><th>P&L</th><th>%</th></tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- ALLOCATION -->
     <div class="sc" id="sc-alloc">
       <div class="sc-hd"><div class="sc-title">Allocation</div><span class="sc-badge" id="alloc-sum"></span></div>
       <div class="alloc-sec" id="alloc-body"></div>
     </div>
 
-  </div><!-- /portfolio -->
+  </div>
 
-  <!-- ANALYSIS TAB -->
+  <!-- ASK CLAUDE TAB -->
   <div class="tp" id="tab-analysis">
-    <div class="ai-card">
-      <div class="ai-title">✦ AI Portfolio Analysis</div>
-      <div class="ai-body" id="ai-body">Upload your CAS PDF first — then ask anything about your portfolio here.</div>
-      <div class="ai-chips" id="ai-chips">
-        <span class="aic" onclick="askAI('Summarise my portfolio — diversification, top holdings, risk profile')">Summary ↗</span>
-        <span class="aic" onclick="askAI('Which funds are underperforming? Should I exit or review any?')">Underperformers ↗</span>
-        <span class="aic" onclick="askAI('Am I over-concentrated in any one AMC or fund category?')">Concentration ↗</span>
-        <span class="aic" onclick="askAI('Suggest how to rebalance my portfolio for better risk-adjusted returns')">Rebalance ↗</span>
-        <span class="aic" onclick="askAI('Estimate my overall XIRR based on invested amounts and current values')">XIRR ↗</span>
+    <div class="claude-card">
+      <div class="claude-title">🤖 Ask Claude about your Portfolio</div>
+      <div class="claude-desc">
+        No API key needed. Click any question below → your portfolio summary is prepared automatically → copy it → paste in Claude.ai and ask your question. Free, unlimited, uses your existing Claude account.
       </div>
-      <div class="ai-row" id="ai-row">
-        <input class="ai-inp" id="ai-q" type="text" placeholder="Ask anything about your portfolio…" onkeydown="if(event.key==='Enter')askAI(this.value)">
-        <button class="ai-send" onclick="askAI(document.getElementById('ai-q').value)">Ask ↗</button>
+      <div class="claude-chips" id="claude-chips">
+        <span class="cc" onclick="prepareQuery('Analyse my mutual fund portfolio. Summarise diversification, top holdings, category split, and overall risk profile.')">Portfolio summary</span>
+        <span class="cc" onclick="prepareQuery('Which of my mutual funds are underperforming? Should I consider exiting or switching any?')">Underperformers</span>
+        <span class="cc" onclick="prepareQuery('Am I over-concentrated in any single AMC, sector, or fund category? What is my concentration risk?')">Concentration risk</span>
+        <span class="cc" onclick="prepareQuery('How should I rebalance my portfolio for better risk-adjusted returns?')">Rebalance advice</span>
+        <span class="cc" onclick="prepareQuery('Estimate my overall XIRR based on my invested amounts and current values.')">Estimate XIRR</span>
+        <span class="cc" onclick="prepareQuery('Compare my equity vs debt allocation. Is it suitable for a long-term investor?')">Equity vs Debt</span>
       </div>
-      <div class="ai-res" id="ai-res"></div>
+      <div class="claude-box" id="claude-box"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button class="claude-copy" id="claude-copy" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+        <a href="https://claude.ai" target="_blank" class="claude-link" id="claude-link" style="display:none">Open Claude.ai ↗</a>
+      </div>
+      <div id="copy-confirm" style="display:none;margin-top:8px;font-size:12px;color:var(--green)">✓ Copied! Now paste it in Claude.ai chat.</div>
+    </div>
+
+    <div class="sc" style="display:block;padding:1.1rem;background:var(--bgc)">
+      <div style="font-size:13px;color:var(--ink2);line-height:1.7">
+        <strong style="color:var(--ink)">How to use:</strong><br>
+        1. Upload your CAS PDF in the Portfolio tab first<br>
+        2. Come back here → click any question above<br>
+        3. Your portfolio data + question is prepared automatically<br>
+        4. Click <strong>Copy to Clipboard</strong> → open <a href="https://claude.ai" target="_blank" style="color:var(--green2)">claude.ai</a> → paste → send<br>
+        5. Claude gives you detailed analysis for free
+      </div>
     </div>
   </div>
 
   <!-- NEWS TAB -->
   <div class="tp" id="tab-news">
     <div class="sc" style="display:block;padding:1.25rem">
-      <div style="font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:.8rem">Live Investment News</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:.8rem">Investment News</div>
       <div class="news-chips">
-        <span class="nc" onclick="fetchNews('Indian mutual fund market news today 2026')">Markets today ↗</span>
-        <span class="nc" onclick="fetchNews('new fund offer NFO India 2026')">New NFOs ↗</span>
-        <span class="nc" onclick="fetchNews('RBI repo rate India monetary policy 2026')">RBI / Rates ↗</span>
-        <span class="nc" onclick="fetchNews('SEBI mutual fund regulation circular 2026')">SEBI Updates ↗</span>
-        <span class="nc" onclick="fetchNews('SIP systematic investment plan India 2026')">SIP Trends ↗</span>
-        <span class="nc" onclick="fetchNews('large cap mid cap equity fund performance India 2026')">Fund Performance ↗</span>
+        <span class="nc" onclick="fetchNews('markets','https://www.moneycontrol.com/rss/MCtopnews.xml')">Markets ↗</span>
+        <span class="nc" onclick="fetchNews('mf','https://www.moneycontrol.com/rss/mutualfunds.xml')">Mutual Funds ↗</span>
+        <span class="nc" onclick="fetchNews('economy','https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms')">Economy ↗</span>
+        <span class="nc" onclick="fetchNews('sebi','https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms')">SEBI / Stocks ↗</span>
       </div>
-      <div class="news-body" id="news-body"><span style="color:var(--ink3)">Click a topic above to load latest news.</span></div>
+      <div class="news-body" id="news-body">
+        <span style="color:var(--ink3)">Click a topic above to load latest news.</span>
+      </div>
     </div>
   </div>
 
-</div><!-- /wrap -->
+</div>
 
 <script>
-// ─────────────────────────────────────────
-// FIREBASE INIT
-// ─────────────────────────────────────────
+// ── FIREBASE ──
 const firebaseConfig = {
   apiKey: "AIzaSyDo0XySBQ6Ck8SqDiC97Hq22ZVxO2kCQTg",
   authDomain: "mf-bulletin.firebaseapp.com",
@@ -395,71 +367,27 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const DOC_SETTINGS = db.collection('mf_bulletin').doc('settings');
-const DOC_PORTFOLIO = db.collection('mf_bulletin').doc('portfolio');
+const DOC = db.collection('mf_bulletin').doc('portfolio');
 
-// ─────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────
-let H = [], API_KEY = '', ctType = 'mobile';
+// ── STATE ──
+let H = [], ctType = 'mobile';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ─────────────────────────────────────────
-// INIT — load from Firebase on page open
-// ─────────────────────────────────────────
+// ── INIT ──
 async function init() {
   try {
-    // Load API key
-    const settingsSnap = await DOC_SETTINGS.get();
-    if (settingsSnap.exists && settingsSnap.data().anthropic_key) {
-      API_KEY = settingsSnap.data().anthropic_key;
-      showApiOk(API_KEY);
-    }
-
-    // Load portfolio
-    const portfolioSnap = await DOC_PORTFOLIO.get();
-    if (portfolioSnap.exists && portfolioSnap.data().holdings?.length) {
-      const data = portfolioSnap.data();
-      H = data.holdings;
-      const savedAt = data.saved_at?.toDate ? data.saved_at.toDate() : new Date(data.saved_at);
+    const snap = await DOC.get();
+    if (snap.exists && snap.data().holdings?.length) {
+      H = snap.data().holdings;
+      const savedAt = snap.data().saved_at?.toDate ? snap.data().saved_at.toDate() : new Date();
       showSavedBanner(H.length, savedAt);
       document.getElementById('wiz').style.display = 'none';
       await fetchAllNAVs();
     }
-  } catch(e) {
-    console.warn('Firebase init error:', e.message);
-  }
+  } catch(e) { console.warn('Firebase load error:', e.message); }
 }
 
-// ─────────────────────────────────────────
-// API KEY — save to Firebase
-// ─────────────────────────────────────────
-async function saveApiKey() {
-  const v = document.getElementById('api-key-inp').value.trim();
-  if (!v.startsWith('sk-ant')) { alert('Please enter a valid Anthropic API key starting with sk-ant'); return; }
-  try {
-    await DOC_SETTINGS.set({ anthropic_key: v }, { merge: true });
-    API_KEY = v;
-    showApiOk(v);
-  } catch(e) { alert('Could not save to Firebase: ' + e.message); }
-}
-function showApiOk(key) {
-  document.getElementById('setup-banner').style.display = 'none';
-  const ok = document.getElementById('setup-ok');
-  ok.style.display = 'flex';
-  document.getElementById('setup-ok-key').textContent = key.substring(0,20) + '…';
-}
-async function clearApiKey() {
-  await DOC_SETTINGS.set({ anthropic_key: '' }, { merge: true });
-  API_KEY = '';
-  document.getElementById('setup-banner').style.display = 'block';
-  document.getElementById('setup-ok').style.display = 'none';
-  document.getElementById('api-key-inp').value = '';
-}
-
-// ─────────────────────────────────────────
-// TABS
-// ─────────────────────────────────────────
+// ── TABS ──
 function swTab(n) {
   ['portfolio','analysis','news'].forEach((t,i) => {
     document.getElementById('tab-'+t).classList.toggle('on', t===n);
@@ -467,9 +395,7 @@ function swTab(n) {
   });
 }
 
-// ─────────────────────────────────────────
-// WIZARD
-// ─────────────────────────────────────────
+// ── WIZARD ──
 function selCt(t) {
   ctType = t;
   document.getElementById('ro-mob').classList.toggle('on', t==='mobile');
@@ -480,8 +406,13 @@ function selCt(t) {
 function goStep2() {
   const pan = document.getElementById('inp-pan').value.trim().toUpperCase();
   if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) { alert('Enter a valid PAN (e.g. ABCDE1234F)'); return; }
-  if (ctType==='mobile') { const m=document.getElementById('inp-mob').value.trim(); if(!/^[6-9]\d{9}$/.test(m)){alert('Enter a valid 10-digit mobile number');return;} }
-  else { const e=document.getElementById('inp-em').value.trim(); if(!e.includes('@')){alert('Enter a valid email');return;} }
+  if (ctType==='mobile') {
+    const m = document.getElementById('inp-mob').value.trim();
+    if (!/^[6-9]\d{9}$/.test(m)) { alert('Enter a valid 10-digit mobile number'); return; }
+  } else {
+    const e = document.getElementById('inp-em').value.trim();
+    if (!e.includes('@')) { alert('Enter a valid email'); return; }
+  }
   const contact = ctType==='mobile' ? document.getElementById('inp-mob').value.trim() : document.getElementById('inp-em').value.trim();
   document.getElementById('det-display').innerHTML =
     `<span style="font-size:11px;color:var(--ink3)">PAN</span><br>
@@ -499,15 +430,14 @@ function goStep(n) {
   });
 }
 
-// ─────────────────────────────────────────
-// FILE UPLOAD
-// ─────────────────────────────────────────
+// ── FILE UPLOAD ──
 document.addEventListener('DOMContentLoaded', () => {
   init();
-  const fi = document.getElementById('fi');
-  const uz = document.getElementById('uz-wrap');
+  const fi  = document.getElementById('fi');
+  const uz  = document.getElementById('uz-wrap');
+  const br  = document.getElementById('uz-browse');
   fi.addEventListener('change', () => { if(fi.files[0]) startProcessing(fi.files[0]); fi.value=''; });
-  document.getElementById('uz-browse').addEventListener('click', e => { e.stopPropagation(); fi.click(); });
+  br.addEventListener('click', e => { e.stopPropagation(); fi.click(); });
   uz.addEventListener('click', () => fi.click());
   uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('dv'); });
   uz.addEventListener('dragleave', () => uz.classList.remove('dv'));
@@ -522,14 +452,11 @@ function setStatus(msg, type, spin) {
 
 function startProcessing(file) {
   if (!file.name.toLowerCase().endsWith('.pdf')) { alert('Please select a PDF file.'); return; }
-  if (!API_KEY) { alert('Please enter your Anthropic API key first.'); return; }
   setStatus('Reading PDF…', 'info', true);
   extractPDF(file);
 }
 
-// ─────────────────────────────────────────
-// PDF.JS — extract text
-// ─────────────────────────────────────────
+// ── PDF.JS TEXT EXTRACTION ──
 async function extractPDF(file) {
   try {
     const buf = await file.arrayBuffer();
@@ -540,76 +467,178 @@ async function extractPDF(file) {
     for (let i=1; i<=pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      text += content.items.map(x=>x.str).join(' ') + '\n';
+      text += content.items.map(x => x.str).join(' ') + '\n';
     }
-    if (!text.trim()) { setStatus('PDF appears empty or scanned. Make sure it is a text-based CAS PDF.', 'err', false); return; }
-    setStatus(`Extracted text — sending to AI for parsing…`, 'info', true);
-    await parseWithClaude(text);
+    if (!text.trim()) { setStatus('PDF appears empty or scanned. Ensure it is a text-based CAS PDF from CAMS/KFintech.', 'err', false); return; }
+    setStatus('Parsing fund holdings…', 'info', true);
+    parseCAStxt(text);
   } catch(err) {
     if (err.name==='PasswordException') setStatus('Wrong password. Try PAN in lowercase (e.g. abcde1234f) or DOB (DDMMYYYY).', 'err', false);
     else setStatus('Error reading PDF: '+err.message, 'err', false);
   }
 }
 
-// ─────────────────────────────────────────
-// CLAUDE — parse holdings from text
-// ─────────────────────────────────────────
-async function parseWithClaude(text) {
-  const sys = `You are an expert at parsing Indian mutual fund CAS (Consolidated Account Statement) text from CAMS, KFintech, CDSL, and NSDL.
-Extract ALL mutual fund holdings. Return ONLY a raw JSON array — no markdown, no explanation, no code fences.
-Each object: fund_name (string), amc (string), folio (string), category (one of: Equity/Debt/Hybrid/Liquid/ELSS/Index-ETF/Other), units (number), avg_nav (number), invested (number), nav_date (string or null).
-Use null for missing. Return [] if nothing found.`;
+// ── CAS TEXT PARSER — regex-based, no API needed ──
+function parseCAStxt(text) {
+  // Normalise whitespace
+  const lines = text.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean);
+  const full  = lines.join(' ');
 
-  let res, data;
+  const holdings = [];
+  let currentFolio = null, currentAMC = null;
+
+  // Known AMC names to detect section headers
+  const AMC_PATTERNS = [
+    'Axis Mutual Fund','HDFC Mutual Fund','ICICI Prudential','SBI Mutual Fund',
+    'Kotak Mutual Fund','Nippon India','Aditya Birla','Mirae Asset','UTI Mutual Fund',
+    'DSP Mutual Fund','Franklin Templeton','Tata Mutual Fund','Canara Robeco',
+    'IDFC Mutual Fund','Bandhan Mutual Fund','Edelweiss Mutual Fund','Motilal Oswal',
+    'Parag Parikh','PPFAS','Quant Mutual Fund','Invesco','Sundaram','Quantum',
+    'Mahindra Manulife','LIC Mutual Fund','HSBC Mutual Fund','Navi Mutual Fund',
+    'WhiteOak','360 ONE','Groww Mutual Fund','Trust Mutual Fund','NJ Mutual Fund'
+  ];
+
+  // Category keywords
+  function detectCategory(name) {
+    const n = name.toLowerCase();
+    if (/elss|tax sav/i.test(n)) return 'ELSS';
+    if (/index|nifty|sensex|bse|etf|s&p/i.test(n)) return 'Index-ETF';
+    if (/liquid|overnight|money market/i.test(n)) return 'Liquid';
+    if (/debt|bond|gilt|income|credit risk|banking.*psu|corporate/i.test(n)) return 'Debt';
+    if (/hybrid|balanced|equity sav|asset alloc|multi asset/i.test(n)) return 'Hybrid';
+    if (/equity|large|mid|small|flexi|value|contra|dividend/i.test(n)) return 'Equity';
+    return 'Other';
+  }
+
+  // Try to detect AMC from text around current position
+  for (const amc of AMC_PATTERNS) {
+    if (full.includes(amc)) currentAMC = amc;
+  }
+
+  // Main pattern: look for folio numbers
+  // Folio format: digits / digits (e.g. 1234567/89 or 12345678901)
+  const folioRe = /(?:Folio\s*(?:No\.?|Number)?[:.\s]*)?(\d{6,16}\/?\d{0,10})/gi;
+  const navRe   = /(?:NAV|Nav)\s*[:\s]*(?:Rs\.?\s*)?([\d,]+\.?\d{0,4})/i;
+  const unitsRe = /(?:Units?|Balance|Closing\s*Units?)\s*[:\s]*([\d,]+\.?\d{0,4})/i;
+  const costRe  = /(?:Cost|Invested|Purchase\s*(?:Value|Cost)|Avg\.?\s*(?:Cost|NAV|Purchase))\s*[:\s]*(?:Rs\.?\s*)?([\d,]+\.?\d{0,2})/i;
+  const schemeRe = /([A-Z][A-Za-z\s\-&()]+(?:Fund|Scheme|Plan|Option|Growth|IDCW|Direct|Regular)[A-Za-z\s\-()]*)/g;
+
+  // Segment text into folio blocks
+  const folioMatches = [...full.matchAll(/Folio\s*(?:No\.?|:)?\s*(\d[\d\/\-]+)/gi)];
+
+  if (folioMatches.length > 0) {
+    for (let fi2=0; fi2<folioMatches.length; fi2++) {
+      const start  = folioMatches[fi2].index;
+      const end    = fi2+1 < folioMatches.length ? folioMatches[fi2+1].index : full.length;
+      const block  = full.substring(start, end);
+      const folio  = folioMatches[fi2][1].trim();
+
+      // Detect AMC for this block
+      let amc = 'Unknown AMC';
+      for (const a of AMC_PATTERNS) { if (block.includes(a)||full.substring(Math.max(0,start-300),start).includes(a)) { amc=a; break; } }
+
+      // Find scheme names in block
+      const schemes = [...block.matchAll(/([A-Z][A-Za-z\s\-&().]+(?:Fund|Scheme|Growth|IDCW|Direct|Regular|Plan)[A-Za-z\s\-().]*)/g)];
+      const schemeName = schemes.length > 0 ? schemes[0][1].trim().replace(/\s+/g,' ') : null;
+
+      // Extract numeric values
+      const navM   = block.match(/(?:NAV|Nav)\s*:?\s*([\d,]+\.?\d{0,4})/i);
+      const unitsM = block.match(/(?:Units?|Balance|Closing)\s*:?\s*([\d,]+\.?\d{0,4})/i);
+      const costM  = block.match(/(?:Cost|Invested|Avg)\s*:?\s*([\d,]+\.?\d{0,2})/i);
+      const mktM   = block.match(/(?:Market\s*Value|Current\s*Value)\s*:?\s*([\d,]+\.?\d{0,2})/i);
+
+      const parseNum = s => s ? parseFloat(s.replace(/,/g,'')) : null;
+      const nav    = parseNum(navM?.[1]);
+      const units  = parseNum(unitsM?.[1]);
+      const cost   = parseNum(costM?.[1]);
+      const mktVal = parseNum(mktM?.[1]);
+
+      if (schemeName && (units||cost)) {
+        holdings.push({
+          fund_name : schemeName,
+          amc       : amc,
+          folio     : folio,
+          category  : detectCategory(schemeName),
+          units     : units,
+          avg_nav   : cost&&units ? parseFloat((cost/units).toFixed(4)) : null,
+          invested  : cost,
+          nav_date  : null
+        });
+      }
+    }
+  }
+
+  // Fallback: scan all lines for scheme + value pairs if folio-based parsing found nothing
+  if (holdings.length === 0) {
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i];
+      // Detect AMC header
+      for (const a of AMC_PATTERNS) { if (line.includes(a)) { currentAMC = a; break; } }
+      // Detect folio
+      const fm = line.match(/Folio\s*(?:No\.?|:)?\s*(\d[\d\/]+)/i);
+      if (fm) { currentFolio = fm[1]; i++; continue; }
+      // Detect scheme name (line with "Fund" or "Scheme" or "Growth")
+      if (/Fund|Scheme|Growth|IDCW|Direct\s*Plan/i.test(line) && line.length > 15) {
+        const sName = line.trim();
+        // Look ahead for values
+        let units=null, nav=null, cost=null;
+        for (let j=i+1; j<Math.min(i+8,lines.length); j++) {
+          const vLine = lines[j];
+          if (!units) { const m=vLine.match(/^([\d,]+\.\d{2,4})$/); if(m) units=parseFloat(m[1].replace(/,/g,'')); }
+          if (!nav)   { const m=vLine.match(/Nav\s*:?\s*([\d,]+\.\d+)/i); if(m) nav=parseFloat(m[1].replace(/,/g,'')); }
+          if (!cost)  { const m=vLine.match(/(?:Cost|Invested)\s*:?\s*([\d,]+\.?\d*)/i); if(m) cost=parseFloat(m[1].replace(/,/g,'')); }
+        }
+        if (units || cost) {
+          holdings.push({
+            fund_name : sName,
+            amc       : currentAMC || 'Unknown AMC',
+            folio     : currentFolio || 'Unknown',
+            category  : detectCategory(sName),
+            units     : units,
+            avg_nav   : cost&&units ? parseFloat((cost/units).toFixed(4)) : null,
+            invested  : cost,
+            nav_date  : null
+          });
+        }
+      }
+      i++;
+    }
+  }
+
+  if (!holdings.length) {
+    setStatus('Could not extract holdings from this PDF. The CAS format may be unusual. Try a different CAS PDF or contact support.', 'err', false);
+    return;
+  }
+
+  H = holdings;
+  saveToFirebase();
+}
+
+// ── FIREBASE SAVE ──
+async function saveToFirebase() {
+  setStatus(`Found ${H.length} funds — saving to Firebase…`, 'info', true);
   try {
-    res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:4000, system:sys,
-        messages:[{role:'user',content:`Extract mutual fund holdings from this CAS statement:\n\n${text.substring(0,80000)}`}]
-      })
-    });
-    data = await res.json();
-  } catch(e) { setStatus('Network error: '+e.message,'err',false); return; }
-
-  if (!res.ok) { setStatus('API error: '+(data?.error?.message||res.status),'err',false); return; }
-
-  let raw = data.content?.find(b=>b.type==='text')?.text||'[]';
-  raw = raw.trim().replace(/^```json?\n?/,'').replace(/```$/,'').trim();
-  let parsed;
-  try { parsed=JSON.parse(raw); }
-  catch(e) { const m=raw.match(/\[[\s\S]*\]/); if(m){try{parsed=JSON.parse(m[0]);}catch(e2){setStatus('Could not parse AI response. Please try again.','err',false);return;}}else{setStatus('No holdings found in PDF. Is this a valid CAS statement?','err',false);return;} }
-
-  if (!Array.isArray(parsed)||!parsed.length) { setStatus('No MF holdings found. Please ensure this is a valid CAS PDF.','err',false); return; }
-
-  H = parsed;
-
-  // Save to Firebase
-  setStatus(`Found ${H.length} funds — saving to cloud…`, 'info', true);
-  try {
-    await DOC_PORTFOLIO.set({ holdings: H, saved_at: firebase.firestore.FieldValue.serverTimestamp() });
-    setStatus(`Saved to Firebase — fetching live NAVs…`, 'info', true);
-  } catch(e) { setStatus(`Could not save to Firebase: ${e.message}. Continuing with local data…`,'info',true); }
-
+    await DOC.set({ holdings: H, saved_at: firebase.firestore.FieldValue.serverTimestamp() });
+  } catch(e) { console.warn('Firebase save error:', e.message); }
   document.getElementById('wiz').style.display = 'none';
   showSavedBanner(H.length, new Date());
   document.getElementById('btn-ref').style.display = 'inline-block';
+  setStatus(`Saved — fetching live NAVs…`, 'info', true);
+  document.getElementById('status-box').style.display = 'flex';
   await fetchAllNAVs();
 }
 
-// ─────────────────────────────────────────
-// SAVED BANNER
-// ─────────────────────────────────────────
 function showSavedBanner(count, date) {
   const b = document.getElementById('saved-banner');
   b.style.display = 'flex';
-  document.getElementById('saved-info').textContent = `✓ Portfolio loaded from Firebase — ${count} funds`;
-  document.getElementById('saved-meta').textContent = `Last uploaded: ${date ? date.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'}`;
+  document.getElementById('saved-info').textContent = `✓ Portfolio loaded — ${count} funds`;
+  document.getElementById('saved-meta').textContent = `Last uploaded: ${date.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}`;
 }
 
 async function clearPortfolio() {
-  if (!confirm('Clear saved portfolio and re-upload a new CAS PDF?')) return;
-  await DOC_PORTFOLIO.delete();
+  if (!confirm('Clear saved portfolio and upload a new CAS PDF?')) return;
+  try { await DOC.delete(); } catch(e) {}
   H = [];
   document.getElementById('saved-banner').style.display = 'none';
   document.getElementById('wiz').style.display = 'block';
@@ -618,19 +647,15 @@ async function clearPortfolio() {
   document.getElementById('sc-alloc').style.display = 'none';
   document.getElementById('btn-ref').style.display = 'none';
   document.getElementById('status-box').style.display = 'none';
-  document.getElementById('ai-chips').style.display = 'none';
-  document.getElementById('ai-row').style.display = 'none';
   goStep(1);
 }
 
-// ─────────────────────────────────────────
-// NAV — mfapi.in (CORS open)
-// ─────────────────────────────────────────
+// ── NAV — mfapi.in ──
 const CACHE = {};
 async function getNav(name) {
   if (CACHE[name]) return CACHE[name];
   try {
-    const q = encodeURIComponent(name.substring(0,45));
+    const q  = encodeURIComponent(name.substring(0,45));
     const sr = await fetch('https://api.mfapi.in/mf/search?q='+q);
     const sl = await sr.json();
     if (!sl?.length) return null;
@@ -642,12 +667,12 @@ async function getNav(name) {
     if(nd.data?.length>=252){const o=parseFloat(nd.data[251].nav);r.r1y=((nav-o)/o*100).toFixed(1);}
     if(nd.data?.length>=756){const o=parseFloat(nd.data[755].nav);r.r3y=(((nav/o)**(1/3)-1)*100).toFixed(1);}
     CACHE[name]=r; return r;
-  } catch(e){return null;}
+  } catch(e){ return null; }
 }
 
 async function fetchAllNAVs() {
   document.getElementById('status-box').style.display='flex';
-  for (let i=0;i<H.length;i+=4) {
+  for (let i=0; i<H.length; i+=4) {
     const batch=H.slice(i,i+4);
     setStatus(`Fetching live NAVs… ${Math.min(i+4,H.length)}/${H.length}`,'info',true);
     await Promise.all(batch.map(async h=>{
@@ -657,10 +682,6 @@ async function fetchAllNAVs() {
   }
   document.getElementById('status-box').style.display='none';
   setSyncTime(); render();
-  document.getElementById('ai-chips').style.display='flex';
-  document.getElementById('ai-row').style.display='flex';
-  const amcs=[...new Set(H.map(h=>h.amc).filter(Boolean))].length;
-  document.getElementById('ai-body').textContent=`Portfolio loaded — ${H.length} funds across ${amcs} AMCs. Ask me anything.`;
 }
 
 async function refreshNAVs() {
@@ -671,9 +692,7 @@ async function refreshNAVs() {
   document.getElementById('btn-ref').style.display='inline-block';
 }
 
-// ─────────────────────────────────────────
-// RENDER
-// ─────────────────────────────────────────
+// ── RENDER ──
 const fI=n=>(n||n===0)?'₹'+Math.round(n).toLocaleString('en-IN'):'—';
 const fD=n=>n?'₹'+parseFloat(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
 const pp=(a,b)=>(a&&b)?(((b-a)/a)*100).toFixed(2):null;
@@ -721,46 +740,76 @@ function render() {
   }).join('');
 }
 
-// ─────────────────────────────────────────
-// AI ANALYSIS
-// ─────────────────────────────────────────
-async function askAI(q) {
-  if (!q||!H.length){alert('Upload your CAS PDF first.');return;}
-  if (!API_KEY){alert('Please enter your API key first.');return;}
-  document.getElementById('ai-q').value='';
-  const res=document.getElementById('ai-res'); res.style.display='block';
-  res.innerHTML='<span class="spin" style="border-top-color:rgba(255,255,255,.5)"></span> Analysing…';
-  let tI=0,tC=0; H.forEach(h=>{tI+=(h.invested||0);tC+=(h.nav&&h.units)?h.units*h.nav:(h.invested||0);});
-  const ctx=`${H.length} funds | Invested: ₹${Math.round(tI).toLocaleString('en-IN')} | Current: ₹${Math.round(tC).toLocaleString('en-IN')}\n`+
-    H.map(h=>`• ${h.fund_name} (${h.category||'?'}) | ₹${Math.round(h.invested||0).toLocaleString('en-IN')} invested${h.r1y?' | 1Y: '+h.r1y+'%':''}`).join('\n');
-  try {
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,
-        messages:[{role:'user',content:`You are an expert Indian mutual fund advisor.\n\nPortfolio:\n${ctx}\n\nQuestion: ${q}\n\nGive concise, actionable advice specific to these holdings.`}]})});
-    const d=await r.json();
-    const t=d.content?.find(b=>b.type==='text')?.text||'No response.';
-    res.innerHTML=t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
-  } catch(e){res.innerHTML='Error: '+e.message;}
+// ── ASK CLAUDE ──
+function prepareQuery(question) {
+  if (!H.length) { alert('Please upload your CAS PDF in the Portfolio tab first.'); swTab('portfolio'); return; }
+  let tI=0,tC=0;
+  H.forEach(h=>{tI+=(h.invested||0);tC+=(h.nav&&h.units)?h.units*h.nav:(h.invested||0);});
+  const gl=tC-tI, gp=tI?((gl/tI)*100).toFixed(2):null;
+
+  const summary =
+`=== MY MUTUAL FUND PORTFOLIO ===
+
+Total Invested  : ${fI(tI)}
+Current Value   : ${fI(tC)}
+Gain / Loss     : ${fI(gl)} (${gp?((gl>=0?'+':'')+gp+'%'):'—'})
+Total Funds     : ${H.length}
+Total Folios    : ${[...new Set(H.map(h=>h.folio).filter(Boolean))].length}
+
+--- HOLDINGS ---
+${H.map((h,i)=>`${i+1}. ${h.fund_name}
+   AMC: ${h.amc||'—'} | Category: ${h.category||'—'} | Folio: ${h.folio||'—'}
+   Units: ${h.units||'—'} | Buy NAV: ${h.avg_nav?'₹'+h.avg_nav:'—'} | Live NAV: ${h.nav?'₹'+h.nav:'—'}
+   Invested: ${fI(h.invested)} | Current: ${(h.nav&&h.units)?fI(h.units*h.nav):'—'}${h.r1y?' | 1Y Return: '+h.r1y+'%':''}`).join('\n\n')}
+
+--- MY QUESTION ---
+${question}`;
+
+  document.getElementById('claude-box').textContent = summary;
+  document.getElementById('claude-box').style.display = 'block';
+  document.getElementById('claude-copy').style.display = 'inline-flex';
+  document.getElementById('claude-link').style.display = 'inline-flex';
+  document.getElementById('copy-confirm').style.display = 'none';
 }
 
-// ─────────────────────────────────────────
-// NEWS
-// ─────────────────────────────────────────
-async function fetchNews(topic) {
-  if (!API_KEY){alert('Please enter your API key first.');return;}
-  const box=document.getElementById('news-body');
-  box.innerHTML='<span class="spin"></span> Fetching latest news…';
+function copyToClipboard() {
+  const txt = document.getElementById('claude-box').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    document.getElementById('copy-confirm').style.display = 'block';
+    document.getElementById('claude-copy').textContent = '✓ Copied!';
+    setTimeout(() => {
+      document.getElementById('claude-copy').innerHTML = '📋 Copy to Clipboard';
+    }, 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    document.getElementById('copy-confirm').style.display = 'block';
+  });
+}
+
+// ── NEWS via RSS2JSON (free, no key) ──
+async function fetchNews(topic, rssUrl) {
+  document.querySelectorAll('.nc').forEach(n=>n.classList.remove('on'));
+  event.target.classList.add('on');
+  const box = document.getElementById('news-body');
+  box.innerHTML = '<span style="color:var(--ink3)"><span class="spin"></span> Loading news…</span>';
   try {
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:`Search: "${topic}". Give 5 recent news items for Indian MF investors. Bold headline, 2-line summary, source. Number 1–5.`}]})});
-    const d=await r.json();
-    const t=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'No results.';
-    box.innerHTML=t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-  } catch(e){box.innerHTML='Error: '+e.message;}
+    const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=8`;
+    const res = await fetch(api);
+    const data = await res.json();
+    if (!data.items?.length) { box.innerHTML='<span style="color:var(--ink3)">No news found.</span>'; return; }
+    box.innerHTML = data.items.map(item => {
+      const desc = item.description ? item.description.replace(/<[^>]+>/g,'').substring(0,160)+'…' : '';
+      const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '';
+      return `<div class="news-item">
+        <div class="news-title"><a href="${item.link}" target="_blank" style="color:var(--ink);text-decoration:none">${item.title}</a></div>
+        <div class="news-desc">${desc}</div>
+        <div class="news-src">${data.feed?.title||''} · ${date}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { box.innerHTML='<span style="color:var(--red)">Could not load news. Please try again.</span>'; }
 }
 
 function setSyncTime(){document.getElementById('sync-lbl').textContent='Updated '+new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
