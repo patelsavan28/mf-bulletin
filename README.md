@@ -16,4 +16,4 @@ Personal Mutual Fund Portfolio Tracker powered by AI.
 4. Upload PDF — portfolio loads automatically
 
 ## Live App
-[Open MF Bulletin](https://yourusername.github.io/mf-bulletin/mf-bulletin.html)
+[Open MF Bulletin](https://patelsavan28.github.io/mf-bulletin/mf-bulletin.html)
